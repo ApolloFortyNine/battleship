@@ -1,0 +1,21 @@
+-Use get requests to send field information
+--Might want to use posts to avoid url length
+-Server can keep state info in a redis server, or SQL, doesn't matter.
+
+###Beginning board creation
+-Since it's an 8x8 grid, simply have 64 numbers in a row,
+every 8 being a whole row. 0 for water, 1 for ship, 2 for hit, 3 for miss
+-Use names like grid=hugeNumber, playerNum=number, gameNum=number
+-Just random generate game numbers, just use max size of int. (could change this to random strings for less collisions)
+
+###Polling
+-Every second each client will make a request to server with gameNum=game_num and
+playerNum=player_num . The server will respond with their board filled out and the opponents board
+with the current hits and misses, and whose turn it is.
+-Once it's a clients turn, they stop polling and make a move. Once the move has been made, they
+begin polling again.
+###Shooting
+-Make a get request with gameNum=game_num, playerNum=player_num, x=X_coord, y=Y_coord.
+Server responds with hit or miss
+
+https://developer.mbed.org/teams/ESP8266/code/ESP8266_HTTP_HelloWorld/file/3209e51b731a/main.cpp
