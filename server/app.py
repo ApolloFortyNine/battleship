@@ -52,6 +52,7 @@ def create_board():
         resp_dict['msg'] = 'Created board for player 2'
         return jsonify(**resp_dict)
 
+
 @app.route('/polling', methods=['POST'])
 def polling():
     """Endpoint used for updating a player when there turn is
@@ -99,6 +100,7 @@ def polling():
         resp_dict['success'] = 0
         resp_dict['msg'] = "Don't go"
         return jsonify(**resp_dict)
+
 
 @app.route('/fire', methods=['POST'])
 def fire():
@@ -168,6 +170,7 @@ def fire():
     else:
         r.hset(str(request.form['gameNum']), 'whose_turn', whose_turn)
     return jsonify(**resp_dict)
+
 
 if __name__ == '__main__':
     app.debug = True
