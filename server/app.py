@@ -8,7 +8,7 @@ app.secret_key = 'not_secret_at_all'
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
-@app.route('/create_board', methods=['POST'])
+@app.route('/create_board', methods=['GET', 'POST'])
 def create_board():
     """Endpoint user for creating the starting boards.
 
@@ -53,7 +53,7 @@ def create_board():
         return jsonify(**resp_dict)
 
 
-@app.route('/polling', methods=['POST'])
+@app.route('/polling', methods=['GET', 'POST'])
 def polling():
     """Endpoint used for updating a player when there turn is
 
@@ -102,7 +102,7 @@ def polling():
         return jsonify(**resp_dict)
 
 
-@app.route('/fire', methods=['POST'])
+@app.route('/fire', methods=['GET', 'POST'])
 def fire():
     """Process firing at the opponent.
 
