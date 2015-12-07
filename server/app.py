@@ -36,6 +36,9 @@ def create_board():
         r.hset(str(request.args.get('gameNum')), 'gameNum', int(request.args.get('gameNum')))
         r.hset(str(request.args.get('gameNum')), 'player1_board', request.args.get('board'))
         r.hset(str(request.args.get('gameNum')), 'player1_board_p2', '0' * 64)
+        # Turn needs to be set to 2, so that player 1 knows not go yet
+        # When player 2 creates the board, then turn is properly set to 1
+        r.hset(str(request.args.get('gameNum')), 'whose_turn', 2)
         resp_dict['success'] = 1
         resp_dict['msg'] = 'Created board for player 1'
         return jsonify(**resp_dict)
