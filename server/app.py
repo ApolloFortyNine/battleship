@@ -31,23 +31,23 @@ def create_board():
         }
     """
     resp_dict = {}
-    if int(request.form['playerNum']) == 1:
+    if int(request.args.get('playerNum')) == 1:
         # TODO Create gameNum key and insert board info for player 1
-        r.hset(str(request.form['gameNum']), 'gameNum', int(request.form['gameNum']))
-        r.hset(str(request.form['gameNum']), 'player1_board', request.form['board'])
-        r.hset(str(request.form['gameNum']), 'player1_board_p2', '0' * 64)
+        r.hset(str(request.args.get('gameNum')), 'gameNum', int(request.args.get('gameNum')))
+        r.hset(str(request.args.get('gameNum')), 'player1_board', request.args.get('board'))
+        r.hset(str(request.args.get('gameNum')), 'player1_board_p2', '0' * 64)
         resp_dict['success'] = 1
         resp_dict['msg'] = 'Created board for player 1'
         return jsonify(**resp_dict)
     else:
         # TODO Access existing gameNum and insert board info for player 2
-        if not (r.hget(str(request.form['gameNum']), 'gameNum')):
+        if not (r.hget(str(request.args.get('gameNum')), 'gameNum')):
             resp_dict['success'] = 0
             resp_dict['msg'] = "Game does not exist"
             return jsonify(**resp_dict)
-        r.hset(str(request.form['gameNum']), 'player2_board', request.form['board'])
-        r.hset(str(request.form['gameNum']), 'player2_board_p1', '0' * 64)
-        r.hset(str(request.form['gameNum']), 'whose_turn', 1)
+        r.hset(str(request.args.get('gameNum')), 'player2_board', request.args.get('board'))
+        r.hset(str(request.args.get('gameNum')), 'player2_board_p1', '0' * 64)
+        r.hset(str(request.args.get('gameNum')), 'whose_turn', 1)
         resp_dict['success'] = 1
         resp_dict['msg'] = 'Created board for player 2'
         return jsonify(**resp_dict)
@@ -77,22 +77,22 @@ def polling():
           "success": 1
         }
     """
-    whose_turn = int(r.hget(str(request.form['gameNum']), 'whose_turn'))
+    whose_turn = int(r.hget(str(request.args.get('gameNum')), 'whose_turn'))
     resp_dict = {}
     if whose_turn == 0:
         resp_dict['success'] = 1
         resp_dict['msg'] = 'You lose'
         return jsonify(**resp_dict)
-    if whose_turn == int(request.form['playerNum']):
+    if whose_turn == int(request.args.get('playerNum')):
         # opp_board_name = ''
         # if whose_turn == 1:
         #     opp_board_name = 'player2_board'
         # else:
         #     opp_board_name = 'player1_board'
-        resp_dict['player1_board'] = str(r.hget(str(request.form['gameNum']), 'player1_board'), 'utf-8')
-        resp_dict['player2_board'] = str(r.hget(str(request.form['gameNum']), 'player2_board'), 'utf-8')
-        resp_dict['player1_board_p2'] = str(r.hget(str(request.form['gameNum']), 'player1_board_p2'), 'utf-8')
-        resp_dict['player2_board_p1'] = str(r.hget(str(request.form['gameNum']), 'player2_board_p1'), 'utf-8')
+        resp_dict['player1_board'] = str(r.hget(str(request.args.get('gameNum')), 'player1_board'), 'utf-8')
+        resp_dict['player2_board'] = str(r.hget(str(request.args.get('gameNum')), 'player2_board'), 'utf-8')
+        resp_dict['player1_board_p2'] = str(r.hget(str(request.args.get('gameNum')), 'player1_board_p2'), 'utf-8')
+        resp_dict['player2_board_p1'] = str(r.hget(str(request.args.get('gameNum')), 'player2_board_p1'), 'utf-8')
         resp_dict['success'] = 1
         resp_dict['msg'] = 'Go'
         return jsonify(**resp_dict)
@@ -127,8 +127,8 @@ def fire():
     """
 
     resp_dict = {}
-    whose_turn = int(r.hget(str(request.form['gameNum']), 'whose_turn'))
-    if whose_turn != int(request.form['playerNum']):
+    whose_turn = int(r.hget(str(request.args.get('gameNum')), 'whose_turn'))
+    if whose_turn != int(request.args.get('playerNum')):
         resp_dict['success'] = 0
         resp_dict['msg'] = "Not your turn"
         return jsonify(**resp_dict)
@@ -142,9 +142,9 @@ def fire():
         whose_turn = 1
         board_to_fire_at_str = 'player1_board'
         board_seen_name_str = 'player2_board_p1'
-    index = int(request.form['y']) * 8 + int(request.form['x'])
-    board = list(str(r.hget(str(request.form['gameNum']), board_to_fire_at_str), 'utf-8'))
-    board_seen = list(str(r.hget(str(request.form['gameNum']), board_seen_name_str), 'utf-8'))
+    index = int(request.args.get('y')) * 8 + int(request.args.get('x'))
+    board = list(str(r.hget(str(request.args.get('gameNum')), board_to_fire_at_str), 'utf-8'))
+    board_seen = list(str(r.hget(str(request.args.get('gameNum')), board_seen_name_str), 'utf-8'))
     # Miss
     if board[index] == '0':
         board[index] = '3'
@@ -158,17 +158,17 @@ def fire():
     board_str = ''.join(board)
     board_seen_str = ''.join(board_seen)
     resp_dict['board_seen'] = board_seen_str
-    r.hset(str(request.form['gameNum']), board_to_fire_at_str, board_str)
-    r.hset(str(request.form['gameNum']), board_seen_name_str, board_seen_str)
+    r.hset(str(request.args.get('gameNum')), board_to_fire_at_str, board_str)
+    r.hset(str(request.args.get('gameNum')), board_seen_name_str, board_seen_str)
     resp_dict['success'] = 1
 
     # If no more parts of a ship are without hits, the firing player wins
     # Set turn to 0 so the polling user knows they lost
     if board_str.find('1') == -1:
         resp_dict['msg'] = 'You win'
-        r.hset(str(request.form['gameNum']), 'whose_turn', 0)
+        r.hset(str(request.args.get('gameNum')), 'whose_turn', 0)
     else:
-        r.hset(str(request.form['gameNum']), 'whose_turn', whose_turn)
+        r.hset(str(request.args.get('gameNum')), 'whose_turn', whose_turn)
     return jsonify(**resp_dict)
 
 
